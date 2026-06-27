@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModatiAR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0a09;
+    --obsidian:#121211;
+    --obsidian-2:#1a1a18;
+    --obsidian-3:#222220;
+    --line:#2e2c27;
+    --line-bright:#46423a;
+    --amber:#e8a23c;
+    --amber-bright:#ffc266;
+    --moss:#5fae6f;
+    --moss-bright:#8ee89e;
+    --ember:#d9543f;
+    --paper:#efe9da;
+    --paper-dim:#8b8678;
+    --font-display:'Sora', 'Segoe UI', Tahoma, Arial, sans-serif;
+    --font-body:'Sora', 'Segoe UI', Tahoma, Arial, sans-serif;
+    --font-body-ar:'Tajawal', 'Segoe UI', Arial, sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--void);color:var(--paper);font-family:var(--font-body);}
+  body[dir="rtl"]{font-family:var(--font-body-ar);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--amber);color:#1a1206;}
+
+  /* ambient backdrop: faint ore-vein glow + grain */
+  .bg-grid{
+    position:fixed;inset:0;z-index:-1;
+    background-image:
+      radial-gradient(ellipse 800px 500px at 12% -5%, rgba(232,162,60,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(95,174,111,0.07), transparent 55%),
+      linear-gradient(180deg, var(--void), #060605 60%);
+  }
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 32px;
+    background:rgba(18,18,17,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:13px;}
+  .logo .block{
+    width:30px;height:30px;border-radius:7px;
+    background:linear-gradient(135deg, var(--amber), #b9762a);
+    box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset, 0 4px 14px rgba(232,162,60,0.25);
+    position:relative;
+  }
+  .logo .block::after{
+    content:'';position:absolute;inset:7px;border-radius:3px;
+    background:var(--void);opacity:.85;
+  }
+  .logo h1{
+    font-family:var(--font-display);font-weight:800;
+    font-size:19px;color:var(--paper);
+    letter-spacing:-0.3px;
+    margin:0;
+  }
+  .logo .tagline{
+    font-family:var(--font-mono);
+    font-size:10px;color:var(--paper-dim);
+    letter-spacing:1.6px;text-transform:uppercase;
+    margin:1px 0 0;
+  }
+  .lang-toggle{
+    display:flex;border:1px solid var(--line);background:var(--obsidian-2);
+    border-radius:8px;overflow:hidden;
+  }
+  .lang-toggle button{
+    background:none;border:none;color:var(--paper-dim);
+    font-family:var(--font-mono);font-weight:600;font-size:12px;
+    padding:9px 17px;letter-spacing:1px;
+  }
+  .lang-toggle button.active{
+    background:var(--amber);color:#1a1206;
+  }
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .account-btn{
+    background:var(--obsidian-2);border:1px solid var(--line-bright);color:var(--paper);
+    font-family:var(--font-mono);font-weight:600;font-size:12px;letter-spacing:.3px;
+    padding:9px 16px;border-radius:8px;display:flex;align-items:center;gap:7px;
+  }
+  .account-btn:hover{border-color:var(--amber);color:var(--amber-bright);}
+  .account-btn.logged-in{border-color:var(--moss);color:var(--moss-bright);}
+  .account-btn .dot{width:6px;height:6px;border-radius:50%;background:var(--moss-bright);box-shadow:0 0 6px var(--moss-bright);display:none;}
+  .account-btn.logged-in .dot{display:inline-block;}
+
+  .text-input{
+    width:100%;padding:11px;background:var(--obsidian-2);color:var(--paper);
+    border:1px solid var(--line-bright);border-radius:8px;font-size:14px;font-family:var(--font-body);
+  }
+  body[dir="rtl"] .text-input{font-family:var(--font-body-ar);}
+  .text-input:focus{outline:none;border-color:var(--amber);}
+
+  .auth-switch{
+    text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--amber-bright);
+    margin:16px 0 0;cursor:pointer;
+  }
+  .auth-switch:hover{text-decoration:underline;}
+  .auth-security-note{
+    font-size:11px;color:var(--paper-dim);line-height:1.6;
+    margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line);
+  }
+
+  .hero{
+    padding:72px 28px 56px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+    display:grid;grid-template-columns:1fr 230px;gap:48px;
+    max-width:1120px;margin:0 auto;
+    align-items:center;
+  }
+  .hero-copy{text-align:left;}
+  body[dir="rtl"] .hero-copy{text-align:right;}
+  .eyebrow{
+    font-family:var(--font-mono);font-size:11px;color:var(--moss-bright);
+    letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--moss-bright);box-shadow:0 0 8px var(--moss-bright);}
+  .connect-line{
+    font-family:var(--font-mono);font-size:11px;color:var(--amber-bright);
+    letter-spacing:2px;text-transform:uppercase;margin:0 0 18px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .connect-line::before{content:'⇄';font-size:12px;}
+  body[dir="rtl"] .connect-line{flex-direction:row-reverse;}
+  body[dir="rtl"] .eyebrow{flex-direction:row-reverse;}
+  .hero h2{
+    font-family:var(--font-display);font-weight:800;
+    font-size:38px;line-height:1.18;letter-spacing:-0.5px;
+    color:var(--paper);
+    margin:0 0 18px;
+  }
+  .hero h2 span{
+    background:linear-gradient(95deg, var(--amber-bright), var(--moss-bright));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{
+    color:var(--paper-dim);max-width:520px;margin:0 0 30px;
+    font-size:16px;line-height:1.7;
+  }
+  .craft-grid{
+    width:210px;height:210px;
+    display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+    gap:6px;background:var(--obsidian);padding:8px;border-radius:16px;
+    border:1px solid var(--line);
+    justify-self:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .craft-cell{
+    background:var(--obsidian-2);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;border:1px solid transparent;
+    transition:background .25s, border-color .25s;
+  }
+  .craft-cell.filled{
+    background:var(--obsidian-3);border-color:var(--line-bright);
+    color:var(--amber-bright);
+  }
+  .craft-cell.result{
+    background:linear-gradient(135deg, var(--amber), #b9762a);
+    color:#1a1206;box-shadow:0 0 24px rgba(232,162,60,0.45);
+    border-color:transparent;
+  }
+
+  .search-bar{
+    max-width:520px;display:flex;gap:0;
+    border:1px solid var(--line-bright);border-radius:10px;overflow:hidden;
+    background:var(--obsidian-2);
+  }
+  body[dir="rtl"] .search-bar{margin-inline-start:auto;}
+  .search-bar input{
+    flex:1;padding:14px 18px;background:transparent;color:var(--paper);
+    border:none;font-size:14px;font-family:var(--font-body);
+  }
+  body[dir="rtl"] .search-bar input{font-family:var(--font-body-ar);}
+  .search-bar input:focus{outline:none;}
+  .search-bar input::placeholder{color:var(--paper-dim);}
+  .search-bar button{
+    background:var(--amber);border:none;color:#1a1206;
+    padding:14px 24px;font-family:var(--font-mono);font-weight:700;font-size:12px;letter-spacing:.5px;
+  }
+  .search-bar button:hover{background:var(--amber-bright);}
+
+  .categories{
+    display:flex;gap:8px;flex-wrap:wrap;
+    max-width:560px;margin:18px 0 0;
+  }
+  body[dir="rtl"] .categories{justify-content:flex-end;}
+  .categories button{
+    background:var(--obsidian-2);border:1px solid var(--line);color:var(--paper-dim);
+    padding:6px 13px;font-size:11px;font-family:var(--font-mono);border-radius:20px;
+    transition:border-color .15s, color .15s;
+  }
+  .categories button.active{border-color:var(--moss-bright);color:var(--moss-bright);background:rgba(95,174,111,0.1);}
+
+  @media (max-width:760px){
+    .hero{grid-template-columns:1fr;}
+    .craft-grid{display:none;}
+    .hero-copy{text-align:center;}
+    body[dir="rtl"] .hero-copy{text-align:center;}
+    .eyebrow{justify-content:center;}
+    .search-bar,.categories{margin-inline:auto;}
+    .hero h2{font-size:28px;}
+  }
+
+  main{max-width:1120px;margin:0 auto;padding:44px 24px 90px;}
+
+  .status-line{
+    font-family:var(--font-mono);font-size:12px;color:var(--paper-dim);
+    margin-bottom:22px;text-align:center;min-height:16px;letter-spacing:.3px;
+  }
+
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+    gap:18px;
+  }
+
+  .card{
+    background:var(--obsidian);border:1px solid var(--line);padding:18px;
+    border-radius:14px;
+    display:flex;flex-direction:column;gap:11px;
+    transition:transform .15s, border-color .15s, box-shadow .15s;
+  }
+  .card:hover{
+    transform:translateY(-3px);border-color:var(--line-bright);
+    box-shadow:0 12px 30px rgba(0,0,0,0.4);
+  }
+  .card-top{display:flex;gap:13px;align-items:flex-start;}
+  .card-icon{
+    width:50px;height:50px;flex-shrink:0;background:var(--obsidian-2);
+    object-fit:cover;border-radius:10px;border:1px solid var(--line);
+  }
+  .card-title{font-size:15px;font-weight:700;color:var(--paper);margin:0;letter-spacing:-.1px;}
+  .card-author{font-family:var(--font-mono);font-size:11px;color:var(--paper-dim);margin:3px 0 0;}
+  .card-desc{
+    font-size:13px;color:var(--paper-dim);line-height:1.55;
+    flex:1;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .card-stats{display:flex;gap:14px;font-family:var(--font-mono);font-size:11px;color:var(--amber-bright);}
+  .card-loaders{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{
+    font-family:var(--font-mono);font-size:10px;padding:3px 8px;background:var(--obsidian-2);
+    border:1px solid var(--line);color:var(--moss-bright);border-radius:20px;
+    text-transform:uppercase;letter-spacing:.5px;
+  }
+  .dl-btn{
+    margin-top:4px;background:var(--paper);color:#1a1206;border:none;border-radius:8px;
+    padding:11px;font-family:var(--font-mono);font-weight:700;font-size:12px;letter-spacing:.5px;
+    transition:background .15s;
+  }
+  .dl-btn:hover{background:var(--amber-bright);}
+
+  .loadmore{
+    display:block;margin:32px auto 0;background:var(--obsidian);
+    border:1px solid var(--line-bright);color:var(--paper);border-radius:10px;
+    padding:13px 28px;font-family:var(--font-mono);font-weight:600;font-size:12px;
+  }
+  .loadmore:hover{border-color:var(--amber);color:var(--amber-bright);}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(4,4,3,0.82);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:16px;
+    backdrop-filter:blur(4px);
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--obsidian);border:1px solid var(--line-bright);border-radius:16px;
+    max-width:420px;width:100%;padding:28px;position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  }
+  .modal h3{
+    font-family:var(--font-display);font-weight:800;font-size:17px;color:var(--paper);
+    margin:0 0 6px;letter-spacing:-.2px;
+  }
+  .modal .modname{font-family:var(--font-mono);color:var(--amber-bright);font-size:12px;margin:0 0 22px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-family:var(--font-mono);font-size:11px;color:var(--paper-dim);margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase;}
+  .field select{
+    width:100%;padding:11px;background:var(--obsidian-2);color:var(--paper);
+    border:1px solid var(--line-bright);border-radius:8px;font-size:14px;font-family:var(--font-body);
+  }
+  .modal-actions{display:flex;gap:10px;margin-top:10px;}
+  .modal-actions button{flex:1;padding:13px;font-family:var(--font-mono);font-weight:700;font-size:12px;border:none;letter-spacing:.5px;border-radius:8px;}
+  .btn-cancel{background:transparent;color:var(--paper-dim);border:1px solid var(--line-bright) !important;}
+  .btn-confirm{background:var(--moss);color:#0a160c;}
+  .btn-confirm:hover:not(:disabled){background:var(--moss-bright);}
+  .btn-confirm:disabled{background:var(--obsidian-3);color:#5c5950;cursor:not-allowed;}
+  .modal-close{
+    position:absolute;top:14px;right:14px;background:none;border:none;
+    color:var(--paper-dim);font-size:18px;
+  }
+  body[dir="rtl"] .modal-close{right:auto;left:14px;}
+
+  .modal-note{font-family:var(--font-mono);font-size:11px;color:var(--ember);margin-top:12px;min-height:14px;}
+
+  footer{
+    text-align:center;padding:26px;color:var(--paper-dim);
+    border-top:1px solid var(--line);font-size:12px;
+  }
+  footer .mc-credit{color:var(--paper-dim);}
+
+  @media (max-width:600px){
+    .hero h2{font-size:20px;}
+    header{padding:14px 16px;}
+    .logo h1{font-size:14px;}
+  }
+</style>
+</head>
+<body dir="ltr">
+<div class="bg-grid"></div>
+
+<header>
+  <div class="logo">
+    <div class="block"></div>
+    <div>
+      <h1>ModatiAR</h1>
+      <p class="tagline" id="tagline">Minecraft Mod Browser</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="account-btn" id="accountBtn" onclick="onAccountBtnClick()">Sign in</button>
+    <div class="lang-toggle">
+      <button id="btnEn" class="active" onclick="setLang('en')">EN</button>
+      <button id="btnAr" onclick="setLang('ar')">AR</button>
+    </div>
+  </div>
+</header>
+
+<!-- Auth modal -->
+<div class="overlay" id="authOverlay">
+  <div class="modal auth-modal">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <h3 id="authTitle">SIGN IN</h3>
+    <p class="modname" id="authSubtitle">Your account stays on this device only</p>
+
+    <div class="field">
+      <label id="labelUsername">Username</label>
+      <input type="text" id="authUsername" class="text-input" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label id="labelPassword">Password</label>
+      <input type="password" id="authPassword" class="text-input" autocomplete="current-password" />
+    </div>
+    <div class="field" id="confirmField" style="display:none;">
+      <label id="labelConfirm">Confirm password</label>
+      <input type="password" id="authConfirm" class="text-input" autocomplete="new-password" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="authCancelBtn" onclick="closeAuthModal()">Cancel</button>
+      <button class="btn-confirm" id="authConfirmBtn" onclick="submitAuth()">Sign in</button>
+    </div>
+    <div class="modal-note" id="authNote"></div>
+    <p class="auth-switch" id="authSwitch" onclick="toggleAuthMode()">Need an account? Create one</p>
+    <p class="auth-security-note" id="authSecurityNote">Passwords are salted and hashed (SHA-256) before storage — they are never saved in plain text. This is a local, single-device account, not a server-verified login.</p>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow" id="eyebrow">POWERED BY MHMOD</p>
+    <p class="connect-line" id="connectLine">CONNECT WITH MODRINTH</p>
+    <h2 id="heroTitle">Find your next <span>Minecraft</span> mod</h2>
+    <p id="heroSub">Search the entire Modrinth catalog, pick your loader and game version, and download — all from one block.</p>
+    <div class="search-bar">
+      <input id="searchInput" type="text" placeholder="Search mods..." />
+      <button id="searchBtn" onclick="doSearch(true)">Search</button>
+    </div>
+    <div class="categories" id="categoryRow"></div>
+  </div>
+  <div class="craft-grid" id="craftGrid"></div>
+</section>
+
+<main>
+  <div class="status-line" id="statusLine"></div>
+  <div class="grid" id="modGrid"></div>
+  <button class="loadmore" id="loadMoreBtn" onclick="loadMore()" style="display:none;">Load more</button>
+</main>
+
+<footer>
+  <p id="footerText">ModatiAR is an independent mod browser. All mod data and files are provided by Modrinth.</p>
+</footer>
+
+<!-- Download modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modalTitle">DOWNLOAD MOD</h3>
+    <p class="modname" id="modalModName"></p>
+
+    <div class="field">
+      <label id="labelLoader">Mod loader</label>
+      <select id="loaderSelect" onchange="onLoaderOrVersionChange()"></select>
+    </div>
+
+    <div class="field">
+      <label id="labelVersion">Game version</label>
+      <select id="versionSelect" onchange="onLoaderOrVersionChange()"></select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelBtn" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="confirmBtn" disabled onclick="startDownload()">Download</button>
+    </div>
+    <div class="modal-note" id="modalNote"></div>
+  </div>
+</div>
+
+<script>
+const API = "https://api.modrinth.com/v2";
+const CATEGORIES = ["adventure","decoration","equipment","food","game-mechanics","library","magic","optimization","storage","technology","utility","worldgen"];
+
+const STR = {
+  en:{
+    eyebrow:'POWERED BY MHMOD',
+    connectLine:'CONNECT WITH MODRINTH',
+    heroTitle:'Find your next <span>Minecraft</span> mod',
+    heroSub:'Search the entire Modrinth catalog, pick your loader and game version, and download — all from one block.',
+    searchPh:'Search mods...',
+    search:'Search',
+    statusSearching:'Digging through the catalog...',
+    statusFound:n=>`Found ${n} mods`,
+    statusError:'Could not reach Modrinth. Check your connection and try again.',
+    statusEmpty:'No mods found. Try a different search.',
+    by:'by',
+    downloads:'downloads',
+    follows:'follows',
+    download:'Download',
+    loadMore:'Load more',
+    modalTitle:'DOWNLOAD MOD',
+    labelLoader:'Mod loader',
+    labelVersion:'Game version',
+    cancel:'Cancel',
+    confirmReady:'Download',
+    confirmPick:'Choose options',
+    noteLoading:'Loading available versions...',
+    noteNone:'No file found for this loader + version combo. Try another combination.',
+    noteReady:f=>`File: ${f}`,
+    footer:'ModatiAR is an independent mod browser. All mod data and files are provided by Modrinth.',
+    signIn:'Sign in',
+    signOut:'Sign out',
+    accountOf:u=>`@${u}`,
+    authTitleLogin:'SIGN IN',
+    authTitleRegister:'CREATE ACCOUNT',
+    authSubtitle:'Your account stays on this device only',
+    labelUsername:'Username',
+    labelPassword:'Password',
+    labelConfirm:'Confirm password',
+    authSwitchToRegister:"Need an account? Create one",
+    authSwitchToLogin:'Already have an account? Sign in',
+    authSecurityNote:'Passwords are salted and hashed (SHA-256) before storage — they are never saved in plain text. This is a local, single-device account, not a server-verified login.',
+    authErrFields:'Please fill in all fields.',
+    authErrMismatch:'Passwords do not match.',
+    authErrShort:'Password must be at least 6 characters.',
+    authErrExists:'That username is already taken on this device.',
+    authErrBadLogin:'Incorrect username or password.',
+    authSuccessRegister:'Account created. You are signed in.',
+    authSuccessLogin:u=>`Welcome back, ${u}.`,
+    needLoginToDownload:'Sign in to download mods.'
+  },
+  ar:{
+    eyebrow:'POWERED BY MHMOD',
+    connectLine:'CONNECT WITH MODRINTH',
+    heroTitle:'اعثر على مود <span>ماينكرافت</span> التالي',
+    heroSub:'تصفح كل مودات Modrinth، اختر مُحمّل المودات وإصدار اللعبة، ثم نزّل الملف مباشرة من هنا.',
+    searchPh:'بحث عن مودات...',
+    search:'بحث',
+    statusSearching:'جاري البحث في القائمة...',
+    statusFound:n=>`تم العثور على ${n} مود`,
+    statusError:'تعذّر الاتصال بـ Modrinth. تحقق من الاتصال وحاول مرة أخرى.',
+    statusEmpty:'لم يتم العثور على مودات. جرّب بحثًا مختلفًا.',
+    by:'بواسطة',
+    downloads:'تنزيلات',
+    follows:'متابعون',
+    download:'تنزيل',
+    loadMore:'تحميل المزيد',
+    modalTitle:'تنزيل المود',
+    labelLoader:'مُحمّل المودات',
+    labelVersion:'إصدار اللعبة',
+    cancel:'إلغاء',
+    confirmReady:'تنزيل',
+    confirmPick:'اختر الخيارات',
+    noteLoading:'جاري تحميل الإصدارات المتاحة...',
+    noteNone:'لا يوجد ملف لهذا المُحمّل مع هذا الإصدار. جرّب تركيبة أخرى.',
+    noteReady:f=>`الملف: ${f}`,
+    footer:'ModatiAR متصفح مودات مستقل. جميع بيانات المودات وملفاتها مقدّمة من Modrinth.',
+    signIn:'تسجيل الدخول',
+    signOut:'تسجيل الخروج',
+    accountOf:u=>`@${u}`,
+    authTitleLogin:'تسجيل الدخول',
+    authTitleRegister:'إنشاء حساب',
+    authSubtitle:'حسابك محفوظ على هذا الجهاز فقط',
+    labelUsername:'اسم المستخدم',
+    labelPassword:'كلمة المرور',
+    labelConfirm:'تأكيد كلمة المرور',
+    authSwitchToRegister:'ليس لديك حساب؟ أنشئ واحدًا',
+    authSwitchToLogin:'لديك حساب؟ سجّل الدخول',
+    authSecurityNote:'يتم تشفير كلمات المرور (SHA-256) مع قيمة عشوائية قبل حفظها، ولا تُحفظ نصًا واضحًا أبدًا. هذا حساب محلي على هذا الجهاز فقط، وليس تسجيل دخول معتمد من خادم.',
+    authErrFields:'يرجى تعبئة جميع الحقول.',
+    authErrMismatch:'كلمتا المرور غير متطابقتين.',
+    authErrShort:'يجب أن تكون كلمة المرور 6 أحرف على الأقل.',
+    authErrExists:'اسم المستخدم هذا مستخدم بالفعل على هذا الجهاز.',
+    authErrBadLogin:'اسم المستخدم أو كلمة المرور غير صحيحة.',
+    authSuccessRegister:'تم إنشاء الحساب. تم تسجيل دخولك.',
+    authSuccessLogin:u=>`مرحبًا بعودتك، ${u}.`,
+    needLoginToDownload:'سجّل الدخول لتنزيل المودات.'
+  }
+};
+
+let lang = 'en';
+let currentQuery = '';
+let currentCategory = null;
+let offset = 0;
+const PAGE_SIZE = 18;
+let totalHits = 0;
+let activeProjectId = null;
+let activeProjectTitle = null;
+let availableVersionsCache = null; // raw versions array from /project/{id}/version
+
+function t(key, ...args){
+  const v = STR[lang][key];
+  return typeof v === 'function' ? v(...args) : v;
+}
+
+function setLang(l){
+  lang = l;
+  document.getElementById('htmlRoot').lang = l;
+  document.body.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('btnEn').classList.toggle('active', l==='en');
+  document.getElementById('btnAr').classList.toggle('active', l==='ar');
+  document.getElementById('tagline').textContent = l === 'ar' ? 'متصفح مودات ماينكرافت' : 'Minecraft Mod Browser';
+  document.getElementById('eyebrow').textContent = t('eyebrow');
+  document.getElementById('connectLine').textContent = t('connectLine');
+  document.getElementById('heroTitle').innerHTML = t('heroTitle');
+  document.getElementById('heroSub').textContent = t('heroSub');
+  document.getElementById('searchInput').placeholder = t('searchPh');
+  document.getElementById('searchBtn').textContent = t('search');
+  document.getElementById('loadMoreBtn').textContent = t('loadMore');
+  document.getElementById('footerText').textContent = t('footer');
+  document.getElementById('modalTitle').textContent = t('modalTitle');
+  document.getElementById('labelLoader').textContent = t('labelLoader');
+  document.getElementById('labelVersion').textContent = t('labelVersion');
+  document.getElementById('cancelBtn').textContent = t('cancel');
+  renderCategories();
+  // re-render current results with new language strings (stats/buttons)
+  if(window.__lastResults) renderGrid(window.__lastResults, false);
+  updateStatus();
+  updateConfirmButtonLabel();
+}
+
+function renderCategories(){
+  const row = document.getElementById('categoryRow');
+  row.innerHTML = '';
+  CATEGORIES.forEach(cat=>{
+    const b = document.createElement('button');
+    b.textContent = cat;
+    if(cat === currentCategory) b.classList.add('active');
+    b.onclick = ()=>{
+      currentCategory = (currentCategory === cat) ? null : cat;
+      doSearch(true);
+    };
+    row.appendChild(b);
+  });
+}
+
+function updateStatus(){
+  const el = document.getElementById('statusLine');
+  if(window.__statusOverride){ el.textContent = window.__statusOverride; return; }
+  if(typeof totalHits === 'number' && totalHits >= 0 && window.__lastResults){
+    el.textContent = totalHits > 0 ? t('statusFound', totalHits) : t('statusEmpty');
+  }
+}
+
+async function doSearch(reset){
+  if(reset){ offset = 0; }
+  currentQuery = document.getElementById('searchInput').value.trim();
+  window.__statusOverride = t('statusSearching');
+  document.getElementById('statusLine').textContent = window.__statusOverride;
+  if(reset) document.getElementById('modGrid').innerHTML = '';
+
+  const facets = [];
+  if(currentCategory) facets.push([`categories:${currentCategory}`]);
+  facets.push(['project_type:mod']);
+
+  const params = new URLSearchParams({
+    query: currentQuery,
+    limit: PAGE_SIZE,
+    offset: offset,
+    facets: JSON.stringify(facets)
+  });
+
+  try{
+    const res = await fetch(`${API}/search?${params.toString()}`);
+    if(!res.ok) throw new Error('bad status');
+    const data = await res.json();
+    window.__statusOverride = null;
+    totalHits = data.total_hits ?? (data.hits ? data.hits.length : 0);
+    window.__lastResults = window.__lastResults && !reset ? window.__lastResults.concat(data.hits) : data.hits;
+    renderGrid(window.__lastResults, false);
+    updateStatus();
+    offset += PAGE_SIZE;
+    document.getElementById('loadMoreBtn').style.display = (offset < totalHits) ? 'block' : 'none';
+  }catch(e){
+    window.__statusOverride = t('statusError');
+    document.getElementById('statusLine').textContent = window.__statusOverride;
+    document.getElementById('loadMoreBtn').style.display = 'none';
+  }
+}
+
+function loadMore(){
+  doSearch(false);
+}
+
+function renderGrid(hits, append){
+  const grid = document.getElementById('modGrid');
+  grid.innerHTML = '';
+  hits.forEach(hit=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const top = document.createElement('div');
+    top.className = 'card-top';
+    const icon = document.createElement('img');
+    icon.className = 'card-icon';
+    icon.src = hit.icon_url || '';
+    icon.onerror = ()=>{ icon.style.visibility='hidden'; };
+    const titleWrap = document.createElement('div');
+    const title = document.createElement('p');
+    title.className = 'card-title';
+    title.textContent = hit.title;
+    const author = document.createElement('p');
+    author.className = 'card-author';
+    author.textContent = `${t('by')} ${hit.author}`;
+    titleWrap.appendChild(title);
+    titleWrap.appendChild(author);
+    top.appendChild(icon);
+    top.appendChild(titleWrap);
+
+    const desc = document.createElement('p');
+    desc.className = 'card-desc';
+    desc.textContent = hit.description;
+
+    const loaders = document.createElement('div');
+    loaders.className = 'card-loaders';
+    (hit.display_categories || hit.categories || []).slice(0,4).forEach(c=>{
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = c;
+      loaders.appendChild(tag);
+    });
+
+    const stats = document.createElement('div');
+    stats.className = 'card-stats';
+    stats.innerHTML = `<span>⬇ ${formatNum(hit.downloads)} ${t('downloads')}</span><span>♥ ${formatNum(hit.follows)} ${t('follows')}</span>`;
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'dl-btn';
+    dlBtn.textContent = t('download');
+    dlBtn.onclick = ()=>openModal(hit.project_id, hit.title, hit.slug);
+
+    card.appendChild(top);
+    card.appendChild(desc);
+    card.appendChild(loaders);
+    card.appendChild(stats);
+    card.appendChild(dlBtn);
+    grid.appendChild(card);
+  });
+}
+
+function formatNum(n){
+  if(n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if(n >= 1000) return (n/1000).toFixed(1)+'k';
+  return n;
+}
+
+// ---- Download modal logic ----
+async function openModal(projectId, title){
+  activeProjectId = projectId;
+  activeProjectTitle = title;
+  availableVersionsCache = null;
+  document.getElementById('modalModName').textContent = title;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('loaderSelect').innerHTML = '<option>...</option>';
+  document.getElementById('versionSelect').innerHTML = '<option>...</option>';
+  document.getElementById('confirmBtn').disabled = true;
+  document.getElementById('modalNote').textContent = t('noteLoading');
+
+  try{
+    const res = await fetch(`${API}/project/${projectId}/version`);
+    if(!res.ok) throw new Error('bad status');
+    const versions = await res.json();
+    availableVersionsCache = versions;
+
+    const loaderSet = new Set();
+    const gameVersionSet = new Set();
+    versions.forEach(v=>{
+      (v.loaders||[]).forEach(l=>loaderSet.add(l));
+      (v.game_versions||[]).forEach(g=>gameVersionSet.add(g));
+    });
+
+    const loaderSelect = document.getElementById('loaderSelect');
+    loaderSelect.innerHTML = '';
+    Array.from(loaderSet).sort().forEach(l=>{
+      const opt = document.createElement('option');
+      opt.value = l; opt.textContent = l;
+      loaderSelect.appendChild(opt);
+    });
+
+    const versionSelect = document.getElementById('versionSelect');
+    versionSelect.innerHTML = '';
+    Array.from(gameVersionSet).sort(compareVersionsDesc).forEach(g=>{
+      const opt = document.createElement('option');
+      opt.value = g; opt.textContent = g;
+      versionSelect.appendChild(opt);
+    });
+
+    document.getElementById('modalNote').textContent = '';
+    onLoaderOrVersionChange();
+  }catch(e){
+    document.getElementById('modalNote').textContent = t('statusError');
+    document.getElementById('loaderSelect').innerHTML = '';
+    document.getElementById('versionSelect').innerHTML = '';
+  }
+}
+
+function compareVersionsDesc(a,b){
+  // best-effort numeric-ish compare, fallback string compare
+  return b.localeCompare(a, undefined, {numeric:true, sensitivity:'base'});
+}
+
+let matchedFile = null;
+
+function onLoaderOrVersionChange(){
+  if(!availableVersionsCache) return;
+  const loader = document.getElementById('loaderSelect').value;
+  const gameVersion = document.getElementById('versionSelect').value;
+  const match = availableVersionsCache.find(v =>
+    (v.loaders||[]).includes(loader) && (v.game_versions||[]).includes(gameVersion)
+  );
+  const confirmBtn = document.getElementById('confirmBtn');
+  const note = document.getElementById('modalNote');
+  if(match && match.files && match.files.length){
+    matchedFile = match.files.find(f=>f.primary) || match.files[0];
+    confirmBtn.disabled = false;
+    note.style.color = 'var(--moss-bright)';
+    note.textContent = t('noteReady', matchedFile.filename);
+  }else{
+    matchedFile = null;
+    confirmBtn.disabled = true;
+    note.style.color = 'var(--ember)';
+    note.textContent = t('noteNone');
+  }
+  updateConfirmButtonLabel();
+}
+
+function updateConfirmButtonLabel(){
+  const btn = document.getElementById('confirmBtn');
+  if(!btn) return;
+  btn.textContent = btn.disabled ? t('confirmPick') : t('confirmReady');
+}
+
+function startDownload(){
+  if(!matchedFile) return;
+  const a = document.createElement('a');
+  a.href = matchedFile.url;
+  a.download = matchedFile.filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  closeModal();
+}
+
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+  activeProjectId = null;
+  matchedFile = null;
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') doSearch(true);
+});
+document.getElementById('overlay').addEventListener('click', e=>{
+  if(e.target.id === 'overlay') closeModal();
+});
+
+// init
+renderCategories();
+buildCraftGrid();
+doSearch(true);
+
+function buildCraftGrid(){
+  const grid = document.getElementById('craftGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  // pattern: a little "plus" shape fills in, center becomes the result
+  const pattern = [0,1,0, 1,1,1, 0,1,0]; // 1 = will fill
+  const cells = [];
+  for(let i=0;i<9;i++){
+    const cell = document.createElement('div');
+    cell.className = 'craft-cell';
+    grid.appendChild(cell);
+    cells.push(cell);
+  }
+  let i = 0;
+  const order = [0,2,6,8,1,3,5,7,4]; // corners first, edges, then center
+  function step(){
+    if(i >= order.length){
+      cells[4].classList.add('result');
+      cells[4].textContent = '◆';
+      return;
+    }
+    const idx = order[i];
+    if(pattern[idx]){
+      cells[idx].classList.add('filled');
+      cells[idx].textContent = '·';
+    }
+    i++;
+    setTimeout(step, 220);
+  }
+  setTimeout(step, 400);
+}
+</script>
+</body>
+</html>
