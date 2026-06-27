@@ -86,33 +86,6 @@
   .lang-toggle button.active{
     background:var(--amber);color:#1a1206;
   }
-  .header-right{display:flex;align-items:center;gap:12px;}
-  .account-btn{
-    background:var(--obsidian-2);border:1px solid var(--line-bright);color:var(--paper);
-    font-family:var(--font-mono);font-weight:600;font-size:12px;letter-spacing:.3px;
-    padding:9px 16px;border-radius:8px;display:flex;align-items:center;gap:7px;
-  }
-  .account-btn:hover{border-color:var(--amber);color:var(--amber-bright);}
-  .account-btn.logged-in{border-color:var(--moss);color:var(--moss-bright);}
-  .account-btn .dot{width:6px;height:6px;border-radius:50%;background:var(--moss-bright);box-shadow:0 0 6px var(--moss-bright);display:none;}
-  .account-btn.logged-in .dot{display:inline-block;}
-
-  .text-input{
-    width:100%;padding:11px;background:var(--obsidian-2);color:var(--paper);
-    border:1px solid var(--line-bright);border-radius:8px;font-size:14px;font-family:var(--font-body);
-  }
-  body[dir="rtl"] .text-input{font-family:var(--font-body-ar);}
-  .text-input:focus{outline:none;border-color:var(--amber);}
-
-  .auth-switch{
-    text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--amber-bright);
-    margin:16px 0 0;cursor:pointer;
-  }
-  .auth-switch:hover{text-decoration:underline;}
-  .auth-security-note{
-    font-size:11px;color:var(--paper-dim);line-height:1.6;
-    margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line);
-  }
 
   .hero{
     padding:72px 28px 56px;
@@ -333,44 +306,11 @@
       <p class="tagline" id="tagline">Minecraft Mod Browser</p>
     </div>
   </div>
-  <div class="header-right">
-    <button class="account-btn" id="accountBtn" onclick="onAccountBtnClick()">Sign in</button>
-    <div class="lang-toggle">
-      <button id="btnEn" class="active" onclick="setLang('en')">EN</button>
-      <button id="btnAr" onclick="setLang('ar')">AR</button>
-    </div>
+  <div class="lang-toggle">
+    <button id="btnEn" class="active" onclick="setLang('en')">EN</button>
+    <button id="btnAr" onclick="setLang('ar')">AR</button>
   </div>
 </header>
-
-<!-- Auth modal -->
-<div class="overlay" id="authOverlay">
-  <div class="modal auth-modal">
-    <button class="modal-close" onclick="closeAuthModal()">✕</button>
-    <h3 id="authTitle">SIGN IN</h3>
-    <p class="modname" id="authSubtitle">Your account stays on this device only</p>
-
-    <div class="field">
-      <label id="labelUsername">Username</label>
-      <input type="text" id="authUsername" class="text-input" autocomplete="username" />
-    </div>
-    <div class="field">
-      <label id="labelPassword">Password</label>
-      <input type="password" id="authPassword" class="text-input" autocomplete="current-password" />
-    </div>
-    <div class="field" id="confirmField" style="display:none;">
-      <label id="labelConfirm">Confirm password</label>
-      <input type="password" id="authConfirm" class="text-input" autocomplete="new-password" />
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" id="authCancelBtn" onclick="closeAuthModal()">Cancel</button>
-      <button class="btn-confirm" id="authConfirmBtn" onclick="submitAuth()">Sign in</button>
-    </div>
-    <div class="modal-note" id="authNote"></div>
-    <p class="auth-switch" id="authSwitch" onclick="toggleAuthMode()">Need an account? Create one</p>
-    <p class="auth-security-note" id="authSecurityNote">Passwords are salted and hashed (SHA-256) before storage — they are never saved in plain text. This is a local, single-device account, not a server-verified login.</p>
-  </div>
-</div>
 
 <section class="hero">
   <div class="hero-copy">
@@ -452,27 +392,7 @@ const STR = {
     noteLoading:'Loading available versions...',
     noteNone:'No file found for this loader + version combo. Try another combination.',
     noteReady:f=>`File: ${f}`,
-    footer:'ModatiAR is an independent mod browser. All mod data and files are provided by Modrinth.',
-    signIn:'Sign in',
-    signOut:'Sign out',
-    accountOf:u=>`@${u}`,
-    authTitleLogin:'SIGN IN',
-    authTitleRegister:'CREATE ACCOUNT',
-    authSubtitle:'Your account stays on this device only',
-    labelUsername:'Username',
-    labelPassword:'Password',
-    labelConfirm:'Confirm password',
-    authSwitchToRegister:"Need an account? Create one",
-    authSwitchToLogin:'Already have an account? Sign in',
-    authSecurityNote:'Passwords are salted and hashed (SHA-256) before storage — they are never saved in plain text. This is a local, single-device account, not a server-verified login.',
-    authErrFields:'Please fill in all fields.',
-    authErrMismatch:'Passwords do not match.',
-    authErrShort:'Password must be at least 6 characters.',
-    authErrExists:'That username is already taken on this device.',
-    authErrBadLogin:'Incorrect username or password.',
-    authSuccessRegister:'Account created. You are signed in.',
-    authSuccessLogin:u=>`Welcome back, ${u}.`,
-    needLoginToDownload:'Sign in to download mods.'
+    footer:'ModatiAR is an independent mod browser. All mod data and files are provided by Modrinth.'
   },
   ar:{
     eyebrow:'POWERED BY MHMOD',
@@ -499,27 +419,7 @@ const STR = {
     noteLoading:'جاري تحميل الإصدارات المتاحة...',
     noteNone:'لا يوجد ملف لهذا المُحمّل مع هذا الإصدار. جرّب تركيبة أخرى.',
     noteReady:f=>`الملف: ${f}`,
-    footer:'ModatiAR متصفح مودات مستقل. جميع بيانات المودات وملفاتها مقدّمة من Modrinth.',
-    signIn:'تسجيل الدخول',
-    signOut:'تسجيل الخروج',
-    accountOf:u=>`@${u}`,
-    authTitleLogin:'تسجيل الدخول',
-    authTitleRegister:'إنشاء حساب',
-    authSubtitle:'حسابك محفوظ على هذا الجهاز فقط',
-    labelUsername:'اسم المستخدم',
-    labelPassword:'كلمة المرور',
-    labelConfirm:'تأكيد كلمة المرور',
-    authSwitchToRegister:'ليس لديك حساب؟ أنشئ واحدًا',
-    authSwitchToLogin:'لديك حساب؟ سجّل الدخول',
-    authSecurityNote:'يتم تشفير كلمات المرور (SHA-256) مع قيمة عشوائية قبل حفظها، ولا تُحفظ نصًا واضحًا أبدًا. هذا حساب محلي على هذا الجهاز فقط، وليس تسجيل دخول معتمد من خادم.',
-    authErrFields:'يرجى تعبئة جميع الحقول.',
-    authErrMismatch:'كلمتا المرور غير متطابقتين.',
-    authErrShort:'يجب أن تكون كلمة المرور 6 أحرف على الأقل.',
-    authErrExists:'اسم المستخدم هذا مستخدم بالفعل على هذا الجهاز.',
-    authErrBadLogin:'اسم المستخدم أو كلمة المرور غير صحيحة.',
-    authSuccessRegister:'تم إنشاء الحساب. تم تسجيل دخولك.',
-    authSuccessLogin:u=>`مرحبًا بعودتك، ${u}.`,
-    needLoginToDownload:'سجّل الدخول لتنزيل المودات.'
+    footer:'ModatiAR متصفح مودات مستقل. جميع بيانات المودات وملفاتها مقدّمة من Modrinth.'
   }
 };
 
